@@ -25,7 +25,7 @@ export function Game({ sessionId }: { sessionId: string; }) {
   const [user] = useLocalStorageState<{ id: string, name: string; }>('user');
   const [userSessions, setUserSessions] = useLocalStorageState<string[]>('userSessions', { defaultValue: [] });
   const { channel } = useChannel(`tictactoe:${sessionId}`, (message: Ably.Types.Message) => {
-    setLogs(prev => [...prev, message.data]);
+    // setLogs(prev => [...prev, message.data]);
     setSession((prev) => (JSON.parse(message.data)));
   });
   const router = useRouter();
@@ -44,7 +44,7 @@ export function Game({ sessionId }: { sessionId: string; }) {
   }, [sessionId]);
 
   const winner = calculateWinner(session.cells);
-  const [logs, setLogs] = useState<string[]>([]);
+  // const [logs, setLogs] = useState<string[]>([]);
 
   const publicFromClientHandler = (newSession: string) => {
     if (channel === null) return;
@@ -111,7 +111,7 @@ export function Game({ sessionId }: { sessionId: string; }) {
         Leave
       </Button>
     </div>
-    <div>{logs.map((l, i) => <p key={i}>{l}</p>)}</div>
+    {/* <div>{logs.map((l, i) => <p key={i}>{l}</p>)}</div> */}
   </div>;
 }
 
