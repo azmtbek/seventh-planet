@@ -46,15 +46,12 @@ export function Game({ sessionId }: { sessionId: string; }) {
     const newCells = [...session.cells];
     newCells[index] = session.current;
 
-    // setCells(newCells);
     const newPlayer = session.current === 'X' ? 'O' : 'X';
-    // setPlayer(newPlayer);
     setSession((prev) => ({ ...prev, current: newPlayer, cells: newCells }));
     publicFromClientHandler();
   };
   const handleRestart = () => {
-    // setCells(Array(9).fill(''));
-    // setPlayer('X');
+
     setSession(prev => ({ ...prev, cells: Array(9).fill(''), current: 'X' }));
   };
 
@@ -80,7 +77,7 @@ export function Game({ sessionId }: { sessionId: string; }) {
         Restart
       </Button>
     </div>
-    <div>{logs.map(l => <p>{l}</p>)}</div>
+    <div>{logs.map((l, i) => <p key={i}>{l}</p>)}</div>
   </div>;
 }
 
