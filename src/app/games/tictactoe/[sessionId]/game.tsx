@@ -1,11 +1,28 @@
 'use client';
 import { Button } from '@/components/ui/button';
-import React, { useEffect, useState } from 'react';
+import React, { MouseEvent, MouseEventHandler, useEffect, useState } from 'react';
 import { Cell } from './cell';
 import useLocalStorageState from 'use-local-storage-state';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-export default function Game({ sessionId }: { sessionId: string; }) {
+import { AblyProvider, useChannel } from "ably/react";
+import * as Ably from 'ably';
+
+export default function PubSubClient({ sessionId }: { sessionId: string; }) {
+
+  const client = new Ably.Realtime.Promise({ authUrl: '/token', authMethod: 'POST' });
+
+  return (
+    <AblyProvider client={client}>
+      <Game sessionId={sessionId} />
+    </AblyProvider>
+  );
+};
+
+
+
+
+export function Game({ sessionId }: { sessionId: string; }) {
   const [session, setSession, { removeItem: removeSession }] = useLocalStorageState(`session:${sessionId}`, {
     defaultValue: { cells: Array(9).fill(''), current: 'X', users: [] }
   });
@@ -14,7 +31,15 @@ export default function Game({ sessionId }: { sessionId: string; }) {
   // const [cells, setCells] = useState([...session.cells]);
 
   const winner = calculateWinner(session.cells);
+  const [logs, setLogs] = useState<string[]>([]);
+  const { channel } = useChannel("tictactoe", (message: Ably.Types.Message) => {
+    setLogs(prev => [...prev, message.data.text]);
+  });
 
+  const publicFromClientHandler = () => {
+    if (channel === null) return;
+    channel.publish('user', { text: `message` });
+  };
 
   const handleClick = (index: number) => {
     if (session.cells[index] || winner) return;
@@ -25,43 +50,13 @@ export default function Game({ sessionId }: { sessionId: string; }) {
     const newPlayer = session.current === 'X' ? 'O' : 'X';
     // setPlayer(newPlayer);
     setSession((prev) => ({ ...prev, current: newPlayer, cells: newCells }));
+    publicFromClientHandler();
   };
   const handleRestart = () => {
     // setCells(Array(9).fill(''));
     // setPlayer('X');
     setSession(prev => ({ ...prev, cells: Array(9).fill(''), current: 'X' }));
   };
-
-
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  // useEffect(() => {
-  //   const url = `${pathname}`;
-  //   console.log(url);
-  //   // You can now use the current URL
-  //   // ...
-  //   return () => {
-  //     console.log('exit', url);
-  //   };
-  // }, [pathname, searchParams]);
-
-  // useEffect(() => {
-  //   const handleRouteChange = (url: any, { shallow }: any) => {
-  //     console.log(
-  //       `App is changing to ${url} ${shallow ? 'with' : 'without'
-  //       } shallow routing`
-  //     );
-  //   };
-
-  //   router.events.on('routeChangeStart', handleRouteChange);
-
-  //   // If the component is unmounted, unsubscribe
-  //   // from the event with the `off` method:
-  //   return () => {
-  //     router.events.off('routeChangeStart', handleRouteChange);
-  //   };
-  // }, [router]);
 
   return <div className='flex flex-col  justify-center items-center gap-10'>
     <div className='text-2xl'>{getStatus(winner, session.current, session.cells)}</div>
@@ -85,7 +80,7 @@ export default function Game({ sessionId }: { sessionId: string; }) {
         Restart
       </Button>
     </div>
-
+    <div>{logs.map(l => <p>{l}</p>)}</div>
   </div>;
 }
 
