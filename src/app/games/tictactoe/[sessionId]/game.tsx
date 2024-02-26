@@ -1,6 +1,6 @@
 'use client';
 import { Button } from '@/components/ui/button';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Cell } from './cell';
 import useLocalStorageState from 'use-local-storage-state';
 
@@ -18,18 +18,24 @@ export default function PubSubClient({ sessionId }: { sessionId: string; }) {
 
 export function Game({ sessionId }: { sessionId: string; }) {
   const [session, setSession, { removeItem: removeSession }] = useLocalStorageState(`session:${sessionId}`, {
-    defaultValue: { cells: Array(9).fill(''), current: 'X', users: [] }
+    defaultValue: { cells: Array(9).fill(''), current: 'X', users: [] as { id: string, name: string; }[] }
   });
+  const [user] = useLocalStorageState<{ id: string, name: string; }>('user');
+
+  useEffect(() => {
+    if (user && session.users.findIndex(u => u.id == user.id) == -1 && session.users.length < 2)
+      setSession((prev) => ({ ...prev, users: [...prev.users, user] }));
+  }, [user, session]);
 
   const winner = calculateWinner(session.cells);
   const [logs, setLogs] = useState<string[]>([]);
-  const { channel } = useChannel("tictactoe", (message: Ably.Types.Message) => {
+  const { channel } = useChannel(`tictactoe:${sessionId}`, (message: Ably.Types.Message) => {
     setLogs(prev => [...prev, message.data.text]);
   });
 
   const publicFromClientHandler = () => {
     if (channel === null) return;
-    channel.publish('user', { text: `message` });
+    channel.publish(`user:${user?.id}`, { text: JSON.stringify(session) });
   };
 
   const handleClick = (index: number) => {
