@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import UserSession from "./user-session";
 import Link from "next/link";
 import Image from "next/image";
+// import { RouteChangeListener } from "./route-change-listener";
 
 
 
@@ -34,6 +35,7 @@ export default function RootLayout({
             <Image alt="home logo" src={'/logo.png'} width={40} height={40} className='w-auto' /> <span className='font-serif text-xl text-[#1a72be]'> 7th planet</span>
           </Link>
         </div>
+        {/* <RouteChangeListener /> */}
         <UserSession />
         {children}</body>
     </html>
