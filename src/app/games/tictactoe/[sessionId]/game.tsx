@@ -1,17 +1,14 @@
 'use client';
 import { Button } from '@/components/ui/button';
-import React, { MouseEvent, MouseEventHandler, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Cell } from './cell';
 import useLocalStorageState from 'use-local-storage-state';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { AblyProvider, useChannel } from "ably/react";
 import * as Ably from 'ably';
 
 export default function PubSubClient({ sessionId }: { sessionId: string; }) {
-
   const client = new Ably.Realtime.Promise({ authUrl: '/token', authMethod: 'POST' });
-
   return (
     <AblyProvider client={client}>
       <Game sessionId={sessionId} />
@@ -19,16 +16,10 @@ export default function PubSubClient({ sessionId }: { sessionId: string; }) {
   );
 };
 
-
-
-
 export function Game({ sessionId }: { sessionId: string; }) {
   const [session, setSession, { removeItem: removeSession }] = useLocalStorageState(`session:${sessionId}`, {
     defaultValue: { cells: Array(9).fill(''), current: 'X', users: [] }
   });
-  // const [player, setPlayer] = useState(session.current);
-
-  // const [cells, setCells] = useState([...session.cells]);
 
   const winner = calculateWinner(session.cells);
   const [logs, setLogs] = useState<string[]>([]);
@@ -51,7 +42,6 @@ export function Game({ sessionId }: { sessionId: string; }) {
     publicFromClientHandler();
   };
   const handleRestart = () => {
-
     setSession(prev => ({ ...prev, cells: Array(9).fill(''), current: 'X' }));
   };
 
