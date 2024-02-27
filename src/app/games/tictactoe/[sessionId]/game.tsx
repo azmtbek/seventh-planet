@@ -53,8 +53,8 @@ export function Game({ sessionId }: { sessionId: string; }) {
 
   const handleClick = (index: number) => {
     if (session.cells[index] || winner) return;
-    if (session.users[0].id === user?.id && session.current === 'X') return;
-    if (session.users[1].id === user?.id && session.current === 'O') return;
+    if (session.users.length > 0 && session.users[0].id === user?.id && session.current === 'X') return;
+    if (session.users.length > 1 && session.users[1].id === user?.id && session.current === 'O') return;
     const newCells = [...session.cells];
     newCells[index] = session.current;
 
